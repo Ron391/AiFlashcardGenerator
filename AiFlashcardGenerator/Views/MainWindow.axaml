@@ -1,0 +1,184 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:AiFlashcardGenerator.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:conv="using:AiFlashcardGenerator.Converters"
+		mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		x:Class="AiFlashcardGenerator.Views.MainWindow"
+		x:DataType="vm:MainViewModel"
+		Icon="/Assets/avalonia-logo.ico"
+		Title="AI Flashcard Generator"
+		Width="800" Height="550"
+		MinWidth="400" MinHeight="350"
+		TransparencyLevelHint="AcrylicBlur"
+		Background="Transparent"
+		SystemDecorations="None"
+		WindowStartupLocation="CenterScreen">
+
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+		to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainViewModel/>
+	</Design.DataContext>
+	<Window.Resources>
+		<!-- Define an instance of the new custom converter -->
+		<conv:BoolToStringConverter x:Key="BoolToStringConverter"/>
+	</Window.Resources>
+
+	<Window.Styles>
+		<!-- Define a clean, rounded style for buttons -->
+		<Style Selector="Button">
+			<Setter Property="Background" Value="#10B981"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="Padding" Value="15,10"/>
+			<Setter Property="FontSize" Value="16"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+
+			<!-- CORRECTED: Use nested selectors for state changes -->
+
+			<!-- Pointer Over (Hover) Effect: uses the :pointerover pseudo-class -->
+			<Style Selector="^:pointerover">
+				<Setter Property="Background" Value="#059669"/>
+			</Style>
+
+			<!-- Disabled State Effect: uses the :disabled pseudo-class -->
+			<Style Selector="^:disabled">
+				<Setter Property="Opacity" Value="0.6"/>
+			</Style>
+		</Style>
+
+		<!-- Style for the Flashcard items in the ListBox -->
+		<Style Selector="ListBoxItem">
+			<Setter Property="Padding" Value="0"/>
+			<Setter Property="Margin" Value="0,0,0,10"/>
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<!-- Disable selection style -->
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}"
+									  Content="{TemplateBinding Content}"
+									  Padding="{TemplateBinding Padding}"
+									  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+									  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</Window.Styles>
+	<Border Background="#F9FAFB"
+			CornerRadius="12" PointerPressed="OnHeaderPointerPressed">
+		<Grid RowDefinitions="Auto, Auto, Auto, *">
+			<!-- Header -->
+            <StackPanel Grid.Row="0"
+                        Margin="20,20,20,10">
+                <TextBlock Text="AI Flashcard Creator"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#111827"/>
+                <TextBlock Text="Generate study cards instantly from any topic using Gemini."
+                           FontSize="14"
+                           Foreground="#6B7280"/>
+            </StackPanel>
+
+			<!-- Input Row -->
+            <Grid Grid.Row="1"
+                  ColumnDefinitions="*, Auto"
+                  Margin="20,0">
+                
+                <TextBox Grid.Column="0"
+                         Text="{Binding TopicInput, Mode=TwoWay}"
+                         Watermark="Enter a topic (e.g., Photosynthesis, C# Data Structures)"
+                         Height="45"
+                         Padding="15,10"
+                         FontSize="16"
+                         CornerRadius="8"
+                         Margin="0,0,10,0"/>
+
+                <Button Grid.Column="1"
+                        Content="{Binding IsGenerating, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Generate|Generating...'}"
+                        Command="{Binding GenerateCommand}"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Right"/>
+            </Grid>
+
+			<!-- Loading & Error Indicators -->
+            <StackPanel Grid.Row="2"
+                        Margin="20,10,20,0">
+                
+                <!-- Error Message -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#EF4444"
+                           IsVisible="{Binding IsErrorMessageVisible}"
+                           FontWeight="SemiBold"
+                           Margin="0,0,0,5"/>
+
+                <!-- Loading Indicator -->
+                <ProgressBar IsIndeterminate="True"
+                             IsVisible="{Binding IsGenerating}"
+                             Height="5"
+                             Classes="standard"
+                             Foreground="#10B981"/>
+            </StackPanel>
+		<!-- Flashcard List -->
+            <ScrollViewer Grid.Row="3"
+                          Margin="20,15,20,20">
+                <ItemsControl ItemsSource="{Binding Flashcards}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Single Flashcard Container -->
+                            <Border CornerRadius="10"
+                                    BorderThickness="1"
+                                    BorderBrush="#E5E7EB"
+                                    Background="White"
+                                    Margin="0,0,0,15"
+                                    Padding="15"
+                                    BoxShadow="0 4 6 -1 #1A000000, 0 2 4 -2 #0F000000"> 
+                                
+                                
+                                <Grid ColumnDefinitions="*, 1, *"> 
+                                    <!-- Front of Card (Term/Question) -->
+                                    <StackPanel Grid.Column="0"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="FRONT (Term/Question)"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#4B5563"/>
+                                        <TextBlock Text="{Binding Front}"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="16"
+                                                   FontWeight="Bold"
+                                                   Foreground="#1F2937"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Separator -->
+                                    <Border Grid.Column="1"
+                                            Width="1"
+                                            Background="#E5E7EB"
+                                            Margin="15,0"/>
+
+                                    <!-- Back of Card (Definition/Answer) -->
+                                    <StackPanel Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Margin="15,0,0,0">
+                                        <TextBlock Text="BACK (Definition/Answer)"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#4B5563"/>
+                                        <TextBlock Text="{Binding Back}"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="16"
+                                                   Foreground="#374151"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+	</Border>
+
+</Window>
