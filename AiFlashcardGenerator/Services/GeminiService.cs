@@ -13,7 +13,7 @@ namespace AiFlashcardGenerator.Services
     {
         // IMPORTANT: Replace this with your actual API key for a real application.
         // In this environment, it remains an empty string.
-        private const string ApiKey = "";
+        private const string ApiKey = "ENTER YOUR API KEY";
         private const string ApiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
         private readonly HttpClient _httpClient;
 
